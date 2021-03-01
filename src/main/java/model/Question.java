@@ -2,21 +2,12 @@ package model;
 
 public class Question {
 
-    private int id;
     private String content;
 
     public Question() {}
 
     public Question(String content) {
         this.content = content;
-    }
-
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
     }
 
     public String getContent() {
@@ -30,8 +21,7 @@ public class Question {
     @Override
     public String toString() {
         return "Question{" +
-                "id=" + id +
-                ", content='" + content + '\'' +
+                "content='" + content + '\'' +
                 '}';
     }
 }
