@@ -21,6 +21,7 @@ dependencies {
     implementation group: 'ch.qos.logback', name: 'logback-classic', version: '1.2.3'
     implementation 'io.github.cdimascio:java-dotenv:5.2.2'
     implementation group: 'org.postgresql', name: 'postgresql', version: '42.2.19'
+    implementation group: 'com.jagrosh', name: 'jda-utilities-commons', version: '3.0.5'
 }
 
 test {

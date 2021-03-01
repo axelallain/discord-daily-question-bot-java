@@ -1,3 +1,4 @@
+import com.jagrosh.jdautilities.commons.waiter.EventWaiter;
 import dao.QuestionDaoImpl;
 import model.Question;
 import net.dv8tion.jda.api.JDA;
@@ -7,6 +8,7 @@ import net.dv8tion.jda.api.entities.MessageChannel;
 import net.dv8tion.jda.api.events.ReadyEvent;
 import net.dv8tion.jda.api.events.guild.member.GuildMemberJoinEvent;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
+import net.dv8tion.jda.api.events.message.priv.PrivateMessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
@@ -26,6 +28,7 @@ public class Listener extends ListenerAdapter {
     private JDA jda;
     private final QuestionDaoImpl questionDaoImpl = new QuestionDaoImpl();
     private static final Logger LOGGER = LoggerFactory.getLogger(Listener.class);
+    private EventWaiter waiter;
 
     // TODO : Add new member name in the private welcome message.
     public String privateWelcomeMessage() throws IOException {
@@ -101,8 +104,19 @@ public class Listener extends ListenerAdapter {
                     LOGGER.info("First question sent to " + member.getEffectiveName());
                 });
 
-                // TODO : wait for reply
+                waiter.waitForEvent(PrivateMessageReceivedEvent.class, (event) -> event.getAuthor().getIdLong() == member.getUser().getIdLong(), (event) -> event.getChannel().sendMessage(question2).queue());
+                // TODO : Get event message contentRaw into a String variable named answer1.
+                waiter.waitForEvent(PrivateMessageReceivedEvent.class, (event) -> event.getAuthor().getIdLong() == member.getUser().getIdLong(), (event) -> event.getChannel().sendMessage("À demain pour de nouvelles aventures !").queue());
+                // TODO : Get event message contentRaw into a String variable named answer2.
+                LOGGER.info(member.getEffectiveName() + " answered questions.");
+
+                // TODO : Embed message creation.
+                // TODO : Get channel by id.
+                // TODO : channel.send(embed).
+                LOGGER.info("Answers have been sent.");
             }
         }
+
+        // TODO : Delete question2 from the database.
     }
 }
