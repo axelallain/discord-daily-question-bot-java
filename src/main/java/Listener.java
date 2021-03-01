@@ -1,5 +1,8 @@
 import dao.QuestionDaoImpl;
 import model.Question;
+import net.dv8tion.jda.api.JDA;
+import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.MessageChannel;
 import net.dv8tion.jda.api.events.ReadyEvent;
 import net.dv8tion.jda.api.events.guild.member.GuildMemberJoinEvent;
@@ -13,9 +16,14 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.sql.SQLException;
+import java.time.DayOfWeek;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.Random;
 
 public class Listener extends ListenerAdapter {
 
+    private JDA jda;
     private final QuestionDaoImpl questionDaoImpl = new QuestionDaoImpl();
     private static final Logger LOGGER = LoggerFactory.getLogger(Listener.class);
 
@@ -66,5 +74,35 @@ public class Listener extends ListenerAdapter {
         }
     }
 
-    public void sendDailyRandomQuestion() {}
+    // TODO : Schedule daily
+    public void sendDailyRandomQuestion() throws SQLException {
+        Random random = new Random();
+        Question randomQuestion = questionDaoImpl.findAll().get(random.nextInt(questionDaoImpl.findAll().size()));
+        String question2 = randomQuestion.getContent();
+        for (Guild guild : jda.getGuilds()) {
+            for (Member member : guild.getMembers()) {
+                if (member.getUser().isBot()) {
+                    continue;
+                }
+
+                String question1;
+                if (DayOfWeek.from(LocalDate.now()) == DayOfWeek.SATURDAY || DayOfWeek.from(LocalDate.now()) == DayOfWeek.SUNDAY) {
+                    return;
+                } else if (DayOfWeek.from(LocalDate.now()) == DayOfWeek.MONDAY) {
+                    question1 = "Hello " + member.getEffectiveName() + ", encore une belle journée à bord du Bubble de JU. Qu'as-tu fait ce week-end ?";
+                } else {
+                    question1 = "Hello " + member.getEffectiveName() + ", encore une belle journée à bord du Bubble de JU. Comment ça va aujourd'hui ?";
+                }
+
+                String finalQuestion1 = question1;
+                member.getUser().openPrivateChannel().queue(privateChannel -> { // this is a lambda expression
+                    // the channel is the successful response
+                    privateChannel.sendMessage(finalQuestion1).queue();
+                    LOGGER.info("First question sent to " + member.getEffectiveName());
+                });
+
+                // TODO : wait for reply
+            }
+        }
+    }
 }
