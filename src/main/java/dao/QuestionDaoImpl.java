@@ -8,6 +8,7 @@ import java.util.List;
 
 public class QuestionDaoImpl {
 
+    // TODO : Close connections
     Connection connection;
 
     {
