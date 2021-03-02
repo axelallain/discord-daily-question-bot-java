@@ -1,6 +1,7 @@
 import com.jagrosh.jdautilities.commons.waiter.EventWaiter;
 import dao.QuestionDaoImpl;
 import model.Question;
+import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
@@ -14,6 +15,7 @@ import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.awt.*;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -29,6 +31,7 @@ public class Listener extends ListenerAdapter {
     private final QuestionDaoImpl questionDaoImpl = new QuestionDaoImpl();
     private static final Logger LOGGER = LoggerFactory.getLogger(Listener.class);
     private EventWaiter waiter;
+    EmbedBuilder embedBuilder = new EmbedBuilder();
 
     // TODO : Add new member name in the private welcome message.
     public String privateWelcomeMessage() throws IOException {
@@ -104,19 +107,25 @@ public class Listener extends ListenerAdapter {
                     LOGGER.info("First question sent to " + member.getEffectiveName());
                 });
 
+                // TODO : Add timeout value to waitForEvent.
                 waiter.waitForEvent(PrivateMessageReceivedEvent.class, (event) -> event.getAuthor().getIdLong() == member.getUser().getIdLong(), (event) -> event.getChannel().sendMessage(question2).queue());
                 // TODO : Get event message contentRaw into a String variable named answer1.
+                // TODO : Add timeout value to waitForEvent.
                 waiter.waitForEvent(PrivateMessageReceivedEvent.class, (event) -> event.getAuthor().getIdLong() == member.getUser().getIdLong(), (event) -> event.getChannel().sendMessage("À demain pour de nouvelles aventures !").queue());
                 // TODO : Get event message contentRaw into a String variable named answer2.
                 LOGGER.info(member.getEffectiveName() + " answered questions.");
 
-                // TODO : Embed message creation.
-                // TODO : Get channel by id.
-                // TODO : channel.send(embed).
+                embedBuilder.setTitle("\uD83D\uDD14 " + member.getEffectiveName() + " a répondu aux questions du jour :", null);
+                embedBuilder.setColor(new Color(0x97DDDD));
+                embedBuilder.addField(question1, answer1, false);
+                embedBuilder.addField(question2, answer2, false);
+                embedBuilder.setThumbnail(member.getUser().getAvatarUrl());
+                MessageChannel channel = jda.getTextChannelById(Config.get("ANSWERS_CHANNEL_ID"));
+                channel.sendMessage(embedBuilder.build()).queue();
                 LOGGER.info("Answers have been sent.");
             }
         }
 
-        // TODO : Delete question2 from the database.
+        questionDaoImpl.delete(randomQuestion.getContent());
     }
 }

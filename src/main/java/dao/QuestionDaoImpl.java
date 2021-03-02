@@ -41,4 +41,11 @@ public class QuestionDaoImpl {
         int n = ps.executeUpdate();
         return n;
     }
+
+    public void delete(String content) throws SQLException {
+        String query = "DELETE FROM question WHERE content=?";
+        PreparedStatement ps = connection.prepareStatement(query);
+        ps.setString(1, content);
+        ps.executeUpdate();
+    }
 }
