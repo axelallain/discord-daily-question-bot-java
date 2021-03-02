@@ -32,9 +32,6 @@ public class Listener extends ListenerAdapter {
     @Override
     public void onReady(@NotNull ReadyEvent event) {
         LOGGER.info(event.getJDA().getSelfUser().getName() + " has connected to Discord!");
-        Timer timer = new Timer();
-        TimerTask task = new SendDailyRandomQuestion();
-        timer.schedule(task, 0, 86400000);
     }
 
     @Override

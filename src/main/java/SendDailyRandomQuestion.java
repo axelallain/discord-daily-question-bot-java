@@ -19,13 +19,15 @@ import java.util.TimerTask;
 
 public class SendDailyRandomQuestion extends TimerTask {
 
-    // TODO : Get current JDA here. JDA = bot singleton instance (null atm)
     private JDA jda;
-
     private final QuestionDaoImpl questionDaoImpl = new QuestionDaoImpl();
     private static final Logger LOGGER = LoggerFactory.getLogger(Listener.class);
     private EventWaiter waiter;
     EmbedBuilder embedBuilder = new EmbedBuilder();
+
+    public SendDailyRandomQuestion(JDA jda) {
+        this.jda = jda;
+    }
 
     @Override
     public void run() {
