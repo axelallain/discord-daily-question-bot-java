@@ -2,6 +2,8 @@ import com.jagrosh.jdautilities.commons.waiter.EventWaiter;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.requests.GatewayIntent;
+import net.dv8tion.jda.api.utils.ChunkingFilter;
+import net.dv8tion.jda.api.utils.MemberCachePolicy;
 
 import javax.security.auth.login.LoginException;
 import java.util.Timer;
@@ -9,11 +11,16 @@ import java.util.TimerTask;
 
 public class Bot {
 
-    EventWaiter waiter = new EventWaiter();
     static JDA jda;
 
     private Bot() throws LoginException {
-        jda = JDABuilder.createDefault(Config.get("TOKEN")).enableIntents(GatewayIntent.GUILD_MEMBERS).addEventListeners(new Listener(), waiter).build();
+        jda = JDABuilder.createDefault(Config.get("TOKEN"))
+                .setChunkingFilter(ChunkingFilter.ALL)
+                .setMemberCachePolicy(MemberCachePolicy.ALL)
+                .enableIntents(GatewayIntent.GUILD_MEMBERS)
+                .addEventListeners(new Listener())
+                .addEventListeners(new EventWaiter())
+                .build();
     }
 
     public static void main(String[] args) throws LoginException {
