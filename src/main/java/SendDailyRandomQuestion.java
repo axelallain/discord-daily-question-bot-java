@@ -7,6 +7,9 @@ import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.MessageChannel;
 import net.dv8tion.jda.api.events.message.priv.PrivateMessageReceivedEvent;
+import org.quartz.Job;
+import org.quartz.JobExecutionContext;
+import org.quartz.JobExecutionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,8 +19,9 @@ import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.Random;
 import java.util.TimerTask;
+import java.util.concurrent.TimeUnit;
 
-public class SendDailyRandomQuestion extends TimerTask {
+public class SendDailyRandomQuestion implements Job {
 
     private JDA jda;
     private final QuestionDaoImpl questionDaoImpl = new QuestionDaoImpl();
@@ -25,12 +29,12 @@ public class SendDailyRandomQuestion extends TimerTask {
     private EventWaiter waiter = new EventWaiter();
     EmbedBuilder embedBuilder = new EmbedBuilder();
 
-    public SendDailyRandomQuestion(JDA jda) {
-        this.jda = jda;
+    public SendDailyRandomQuestion() {
+        jda = MyJda.getJda();
     }
 
     @Override
-    public void run() {
+    public void execute(JobExecutionContext jobExecutionContext) throws JobExecutionException {
         try {
             Random random = new Random();
             Question randomQuestion = questionDaoImpl.findAll().get(random.nextInt(questionDaoImpl.findAll().size()));
@@ -59,15 +63,33 @@ public class SendDailyRandomQuestion extends TimerTask {
                             LOGGER.info("First question sent to " + member.getEffectiveName());
                         });
 
+                        // TODO : waitForEvent à revoir entièrement.
                         // TODO : Add timeout value to waitForEvent.
                         waiter.waitForEvent(PrivateMessageReceivedEvent.class,
                                 (event) -> event.getMessage().getAuthor() == member.getUser(),
-                                (event) -> event.getChannel().sendMessage(question2).queue());
+                                (event) -> {
+                                        event.getChannel().sendMessage(question2).queue();
+                                },
+                                30, TimeUnit.MINUTES,
+                                () -> member.getUser().openPrivateChannel().queue(privateChannel -> {
+                                    privateChannel.sendMessage("Tu as l'air absent. Je reviens demain matin !").queue();
+                                    LOGGER.info(member.getEffectiveName() + " did not answer questions.");
+                                })
+                        );
+
                         // TODO : Get event message contentRaw into a String variable named answer1.
                         // TODO : Add timeout value to waitForEvent.
                         waiter.waitForEvent(PrivateMessageReceivedEvent.class,
                                 (event) -> event.getMessage().getAuthor() == member.getUser(),
-                                (event) -> event.getChannel().sendMessage("À demain pour de nouvelles aventures !").queue());
+                                (event) -> {
+                                    event.getChannel().sendMessage("À demain pour de nouvelles aventures !").queue();
+                                },
+                                30, TimeUnit.MINUTES,
+                                () -> member.getUser().openPrivateChannel().queue(privateChannel -> {
+                                    privateChannel.sendMessage("Tu as l'air absent. Je reviens demain matin !").queue();
+                                    LOGGER.info(member.getEffectiveName() + " did not answer questions.");
+                                })
+                        );
                         // TODO : Get event message contentRaw into a String variable named answer2.
                         LOGGER.info(member.getEffectiveName() + " answered questions.");
 
