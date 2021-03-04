@@ -2,12 +2,22 @@ package model;
 
 public class Question {
 
+    private Long guildid;
     private String content;
 
     public Question() {}
 
-    public Question(String content) {
+    public Question(Long guildid, String content) {
+        this.guildid = guildid;
         this.content = content;
+    }
+
+    public Long getGuildid() {
+        return guildid;
+    }
+
+    public void setGuildid(Long guildid) {
+        this.guildid = guildid;
     }
 
     public String getContent() {
@@ -21,7 +31,8 @@ public class Question {
     @Override
     public String toString() {
         return "Question{" +
-                "content='" + content + '\'' +
+                "guildid=" + guildid +
+                ", content='" + content + '\'' +
                 '}';
     }
 }

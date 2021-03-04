@@ -36,10 +36,10 @@ public class SendDailyRandomQuestion implements Job {
     @Override
     public void execute(JobExecutionContext jobExecutionContext) throws JobExecutionException {
         try {
-            Random random = new Random();
-            Question randomQuestion = questionDaoImpl.findAll().get(random.nextInt(questionDaoImpl.findAll().size()));
-            String question2 = randomQuestion.getContent();
             for (Guild guild : jda.getGuilds()) {
+                Random random = new Random();
+                Question randomQuestion = questionDaoImpl.findAllByGuildid(guild.getIdLong()).get(random.nextInt(questionDaoImpl.findAll().size()));
+                String question2 = randomQuestion.getContent();
                 for (Member member : guild.getMembers()) {
 
                         if (member.getUser().isBot()) {
@@ -100,9 +100,8 @@ public class SendDailyRandomQuestion implements Job {
 
 
                 }
+                questionDaoImpl.delete(randomQuestion.getContent());
             }
-            // TODO : Remove comment because delete was turned off for testing purpose.
-            // questionDaoImpl.delete(randomQuestion.getContent());
         } catch (SQLException sqlException) {
             sqlException.printStackTrace();
         }

@@ -34,10 +34,28 @@ public class QuestionDaoImpl {
         return questions;
     }
 
-    public int add(Question question) throws SQLException {
-        String query = "INSERT INTO question(content) VALUES (?)";
+    public List<Question> findAllByGuildid(Long guildid) throws SQLException {
+        String query = "SELECT * FROM question WHERE guildid=?";
         PreparedStatement ps = connection.prepareStatement(query);
-        ps.setString(1, question.getContent());
+        ps.setLong(1, guildid);
+        ResultSet rs = ps.executeQuery();
+        List<Question> questions = new ArrayList<>();
+
+        while(rs.next()) {
+            Question question = new Question();
+            question.setGuildid(rs.getLong("guildid"));
+            question.setContent(rs.getString("content"));
+            questions.add(question);
+        }
+
+        return questions;
+    }
+
+    public int add(Question question) throws SQLException {
+        String query = "INSERT INTO question(guildid, content) VALUES (?, ?)";
+        PreparedStatement ps = connection.prepareStatement(query);
+        ps.setLong(1, question.getGuildid());
+        ps.setString(2, question.getContent());
         int n = ps.executeUpdate();
         return n;
     }

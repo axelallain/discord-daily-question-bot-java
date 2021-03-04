@@ -59,6 +59,7 @@ public class Listener extends ListenerAdapter {
 
         if (contentRaw.startsWith(prefix + "add")) {
             Question question = new Question();
+            question.setGuildid(event.getMessage().getGuild().getIdLong());
             question.setContent(contentRaw.substring(5));
             try {
                 questionDaoImpl.add(question);
