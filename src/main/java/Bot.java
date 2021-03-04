@@ -18,20 +18,21 @@ import javax.security.auth.login.LoginException;
 public class Bot {
 
     JDA jda;
+    EventWaiter waiter = new EventWaiter();
 
     private Bot() throws LoginException {
         jda = JDABuilder.createDefault(Config.get("TOKEN"))
                 .setChunkingFilter(ChunkingFilter.ALL)
                 .setMemberCachePolicy(MemberCachePolicy.ALL)
-                .enableIntents(GatewayIntent.GUILD_MEMBERS)
-                .addEventListeners(new Listener())
-                .addEventListeners(new EventWaiter())
+                .enableIntents(GatewayIntent.GUILD_MEMBERS, GatewayIntent.DIRECT_MESSAGES)
+                .addEventListeners(new Listener(), waiter)
                 .build();
     }
 
     public static void main(String[] args) throws LoginException, SchedulerException {
         Bot b = new Bot();
         MyJda.setDefaultJda(b.jda);
+        MyWaiter.setDefaultWaiter(b.waiter);
         JdbcConfig.main(null);
 
         int hour = Integer.parseInt(Config.get("DAILY_QUESTION_HOUR"));

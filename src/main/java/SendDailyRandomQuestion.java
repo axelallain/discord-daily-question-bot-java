@@ -18,19 +18,20 @@ import java.sql.SQLException;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.Random;
-import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class SendDailyRandomQuestion implements Job {
 
     private JDA jda;
     private final QuestionDaoImpl questionDaoImpl = new QuestionDaoImpl();
     private static final Logger LOGGER = LoggerFactory.getLogger(Listener.class);
-    private EventWaiter waiter = new EventWaiter();
+    private EventWaiter waiter;
     EmbedBuilder embedBuilder = new EmbedBuilder();
 
     public SendDailyRandomQuestion() {
         jda = MyJda.getJda();
+        waiter = MyWaiter.getWaiter();
     }
 
     @Override
@@ -63,44 +64,41 @@ public class SendDailyRandomQuestion implements Job {
                             LOGGER.info("First question sent to " + member.getEffectiveName());
                         });
 
-                        // TODO : waitForEvent à revoir entièrement.
-                        // TODO : Add timeout value to waitForEvent.
                         waiter.waitForEvent(PrivateMessageReceivedEvent.class,
-                                (event) -> event.getMessage().getAuthor() == member.getUser(),
+                                (event) -> event.getMessage().getAuthor().getIdLong() == member.getUser().getIdLong(),
                                 (event) -> {
                                         event.getChannel().sendMessage(question2).queue();
+                                        LOGGER.info("Second question sent to " + member.getEffectiveName());
+
+                                        waiter.waitForEvent(PrivateMessageReceivedEvent.class,
+                                                (event2) -> event2.getMessage().getAuthor().getIdLong() == member.getUser().getIdLong(),
+                                                (event2) -> {
+                                                    LOGGER.info(member.getEffectiveName() + " answered questions.");
+
+                                                    embedBuilder.setTitle("\uD83D\uDD14 " + member.getEffectiveName() + " a répondu aux questions du jour :", null);
+                                                    embedBuilder.setColor(new Color(0x97DDDD));
+                                                    embedBuilder.addField(question1, event.getMessage().getContentRaw(), false);
+                                                    embedBuilder.addField(question2, event2.getMessage().getContentRaw(), false);
+                                                    embedBuilder.setThumbnail(member.getUser().getAvatarUrl());
+                                                    MessageChannel channel = jda.getTextChannelById(Config.get("ANSWERS_CHANNEL_ID"));
+                                                    channel.sendMessage(embedBuilder.build()).queue();
+                                                    LOGGER.info("Answers have been sent.");
+                                                },
+                                                30, TimeUnit.MINUTES,
+                                                () -> member.getUser().openPrivateChannel().queue(privateChannel -> {
+                                                    privateChannel.sendMessage("Tu n'as pas répondu à la seconde question. Je reviens demain matin !").queue();
+                                                    LOGGER.info(member.getEffectiveName() + " did not answer questions.");
+                                                })
+                                        );
                                 },
                                 30, TimeUnit.MINUTES,
                                 () -> member.getUser().openPrivateChannel().queue(privateChannel -> {
-                                    privateChannel.sendMessage("Tu as l'air absent. Je reviens demain matin !").queue();
+                                    privateChannel.sendMessage("Tu n'as pas répondu à la première question. Je reviens demain matin !").queue();
                                     LOGGER.info(member.getEffectiveName() + " did not answer questions.");
                                 })
                         );
 
-                        // TODO : Get event message contentRaw into a String variable named answer1.
-                        // TODO : Add timeout value to waitForEvent.
-                        waiter.waitForEvent(PrivateMessageReceivedEvent.class,
-                                (event) -> event.getMessage().getAuthor() == member.getUser(),
-                                (event) -> {
-                                    event.getChannel().sendMessage("À demain pour de nouvelles aventures !").queue();
-                                },
-                                30, TimeUnit.MINUTES,
-                                () -> member.getUser().openPrivateChannel().queue(privateChannel -> {
-                                    privateChannel.sendMessage("Tu as l'air absent. Je reviens demain matin !").queue();
-                                    LOGGER.info(member.getEffectiveName() + " did not answer questions.");
-                                })
-                        );
-                        // TODO : Get event message contentRaw into a String variable named answer2.
-                        LOGGER.info(member.getEffectiveName() + " answered questions.");
 
-                        embedBuilder.setTitle("\uD83D\uDD14 " + member.getEffectiveName() + " a répondu aux questions du jour :", null);
-                        embedBuilder.setColor(new Color(0x97DDDD));
-                        embedBuilder.addField(question1, "answer1", false);
-                        embedBuilder.addField(question2, "answer2", false);
-                        embedBuilder.setThumbnail(member.getUser().getAvatarUrl());
-                        MessageChannel channel = jda.getTextChannelById(Config.get("ANSWERS_CHANNEL_ID"));
-                        channel.sendMessage(embedBuilder.build()).queue();
-                        LOGGER.info("Answers have been sent.");
                     }
                 }
             }
