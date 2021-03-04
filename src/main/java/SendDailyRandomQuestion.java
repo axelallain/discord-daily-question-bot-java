@@ -27,7 +27,6 @@ public class SendDailyRandomQuestion implements Job {
     private final QuestionDaoImpl questionDaoImpl = new QuestionDaoImpl();
     private static final Logger LOGGER = LoggerFactory.getLogger(Listener.class);
     private EventWaiter waiter;
-    EmbedBuilder embedBuilder = new EmbedBuilder();
 
     public SendDailyRandomQuestion() {
         jda = MyJda.getJda();
@@ -42,8 +41,7 @@ public class SendDailyRandomQuestion implements Job {
             String question2 = randomQuestion.getContent();
             for (Guild guild : jda.getGuilds()) {
                 for (Member member : guild.getMembers()) {
-                    // TODO : Test for line purpose only. Delete.
-                    if (member.getEffectiveName().equals("axelallain")) {
+
                         if (member.getUser().isBot()) {
                             continue;
                         }
@@ -75,6 +73,7 @@ public class SendDailyRandomQuestion implements Job {
                                                 (event2) -> {
                                                     LOGGER.info(member.getEffectiveName() + " answered questions.");
 
+                                                    EmbedBuilder embedBuilder = new EmbedBuilder();
                                                     embedBuilder.setTitle("\uD83D\uDD14 " + member.getEffectiveName() + " a répondu aux questions du jour :", null);
                                                     embedBuilder.setColor(new Color(0x97DDDD));
                                                     embedBuilder.addField(question1, event.getMessage().getContentRaw(), false);
@@ -84,14 +83,14 @@ public class SendDailyRandomQuestion implements Job {
                                                     channel.sendMessage(embedBuilder.build()).queue();
                                                     LOGGER.info("Answers have been sent.");
                                                 },
-                                                30, TimeUnit.MINUTES,
+                                                12, TimeUnit.HOURS,
                                                 () -> member.getUser().openPrivateChannel().queue(privateChannel -> {
                                                     privateChannel.sendMessage("Tu n'as pas répondu à la seconde question. Je reviens demain matin !").queue();
                                                     LOGGER.info(member.getEffectiveName() + " did not answer questions.");
                                                 })
                                         );
                                 },
-                                30, TimeUnit.MINUTES,
+                                12, TimeUnit.HOURS,
                                 () -> member.getUser().openPrivateChannel().queue(privateChannel -> {
                                     privateChannel.sendMessage("Tu n'as pas répondu à la première question. Je reviens demain matin !").queue();
                                     LOGGER.info(member.getEffectiveName() + " did not answer questions.");
@@ -99,7 +98,7 @@ public class SendDailyRandomQuestion implements Job {
                         );
 
 
-                    }
+
                 }
             }
             // TODO : Remove comment because delete was turned off for testing purpose.
