@@ -1,7 +1,7 @@
 **Hello, thank you for adding me!** :partying_face:
-My goal is to send your random questions **every day at 7 AM**.
-The questions are sent as a private message.
-The answers will be posted publicly on the server.
+I will send you random questions every day at 7 AM for you to stay in touch with your team.
+Questions are sent as a private message.
+All answers will be posted publicly on the server.
 ```
 !welcome    :    Set the current channel as Welcome channel.
 

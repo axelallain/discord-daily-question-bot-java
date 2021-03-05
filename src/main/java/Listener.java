@@ -1,6 +1,8 @@
 import com.jagrosh.jdautilities.commons.waiter.EventWaiter;
+import dao.DailytimeDaoImpl;
 import dao.QuestionDaoImpl;
 import dao.SChannelDaoImpl;
+import model.Dailytime;
 import model.Question;
 import model.SChannel;
 import net.dv8tion.jda.api.EmbedBuilder;
@@ -31,6 +33,7 @@ public class Listener extends ListenerAdapter {
     private EventWaiter waiter;
     EmbedBuilder embedBuilder = new EmbedBuilder();
     private final SChannelDaoImpl sChannelDaoImpl = new SChannelDaoImpl();
+    private final DailytimeDaoImpl dailytimeDaoImpl = new DailytimeDaoImpl();
 
     public String privateWelcomeMessage() throws IOException {
         return new String(Files.readAllBytes(Paths.get("src/main/resources/privateWelcomeMessage.txt")));
@@ -180,6 +183,38 @@ public class Listener extends ListenerAdapter {
                 // TODO : Format the list for displaying.
                 channel.sendMessage(questions.toString()).queue();
             }
+        }
+
+        if (contentRaw.startsWith(prefix + "dailytime")) {
+            Dailytime dailytime = new Dailytime();
+
+            try {
+                if (dailytimeDaoImpl.findByGuildid(event.getGuild().getIdLong()) == null) {
+                    dailytime = new Dailytime();
+                } else {
+                    dailytimeDaoImpl.delete(event.getGuild().getIdLong());
+                }
+            } catch (SQLException throwables) {
+                throwables.printStackTrace();
+            }
+
+            String rawTime = contentRaw.substring(11);
+            String partsTime[] = rawTime.split(":");
+            int hour = Integer.parseInt(partsTime[0]);
+            int minutes = Integer.parseInt(partsTime[1]);
+            dailytime.setGuildid(event.getGuild().getIdLong());
+            dailytime.setHour(hour);
+            dailytime.setMinutes(minutes);
+
+            try {
+                dailytimeDaoImpl.add(dailytime);
+            } catch (SQLException throwables) {
+                throwables.printStackTrace();
+            }
+
+            MessageChannel channel = event.getChannel();
+            channel.sendMessage("The time for sending questions is set to " + hour + ":" + minutes).queue();
+            LOGGER.info("A new dailytime has been added.");
         }
     }
 }
