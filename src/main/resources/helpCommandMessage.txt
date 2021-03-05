@@ -1,0 +1,13 @@
+```
+!welcome    :    Set the current channel as Welcome channel.
+
+!answers    :    Set the current channel as Answers channel.
+
+!questions  :    Get all the questions for this server.
+
+!add        :    Add your question to the random daily list.
+                 Example : !add How old are you?
+
+
+Make a private channel to add your questions without SPOILING!
+```

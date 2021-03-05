@@ -19,6 +19,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -34,9 +36,27 @@ public class Listener extends ListenerAdapter {
         return new String(Files.readAllBytes(Paths.get("src/main/resources/privateWelcomeMessage.txt")));
     }
 
+    public String helpCommandMessage() throws IOException {
+        return new String(Files.readAllBytes(Paths.get("src/main/resources/helpCommandMessage.txt")));
+    }
+
+    public String onGuildJoinMessage() throws IOException {
+        return new String(Files.readAllBytes(Paths.get("src/main/resources/onGuildJoinMessage.txt")));
+    }
+
     @Override
     public void onReady(@NotNull ReadyEvent event) {
         LOGGER.info(event.getJDA().getSelfUser().getName() + " has connected to Discord!");
+    }
+
+    @Override
+    public void onGuildJoin(@NotNull GuildJoinEvent event) {
+        MessageChannel channel = event.getGuild().getDefaultChannel();
+        try {
+            channel.sendMessage(onGuildJoinMessage()).queue();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -48,8 +68,10 @@ public class Listener extends ListenerAdapter {
             throwables.printStackTrace();
         }
         MessageChannel channel = event.getJDA().getTextChannelById(sChannel.getChannelid());
-        channel.sendMessage(event.getMember().getEffectiveName() + " vient de monter à bord du Bubble de JU. Bienvenue à toi matelot !").queue();
+        channel.sendMessage("Hi " + event.getMember().getEffectiveName() + ", and welcome to our server!").queue();
         LOGGER.info("Public welcome message has been sent for " + event.getMember().getEffectiveName());
+
+        /*
 
         // Multi lines String
         event.getMember().getUser().openPrivateChannel().queue(privateChannel -> { // this is a lambda expression
@@ -61,6 +83,8 @@ public class Listener extends ListenerAdapter {
                 e.printStackTrace();
             }
         });
+
+        */
     }
 
     @Override
@@ -130,6 +154,32 @@ public class Listener extends ListenerAdapter {
             MessageChannel channel = event.getChannel();
             channel.sendMessage(event.getChannel().getName() + " is the new answers channel for this server.").queue();
             LOGGER.info("A new answers channel has been set.");
+        }
+
+        if (contentRaw.startsWith(prefix + "help")) {
+            MessageChannel channel = event.getChannel();
+            try {
+                channel.sendMessage(helpCommandMessage()).queue();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        if (contentRaw.startsWith(prefix + "questions")) {
+            List<Question> questions = new ArrayList<>();
+            try {
+                questions = questionDaoImpl.findAllByGuildid(event.getGuild().getIdLong());
+            } catch (SQLException throwables) {
+                throwables.printStackTrace();
+            }
+
+            MessageChannel channel = event.getChannel();
+            if (questions.isEmpty()) {
+                channel.sendMessage("Your questions list is empty.").queue();
+            } else {
+                // TODO : Format the list for displaying.
+                channel.sendMessage(questions.toString()).queue();
+            }
         }
     }
 }
