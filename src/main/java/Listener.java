@@ -1,7 +1,10 @@
 import com.jagrosh.jdautilities.commons.waiter.EventWaiter;
 import dao.QuestionDaoImpl;
+import dao.SChannelDaoImpl;
 import model.Question;
+import model.SChannel;
 import net.dv8tion.jda.api.EmbedBuilder;
+import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.MessageChannel;
 import net.dv8tion.jda.api.events.ReadyEvent;
 import net.dv8tion.jda.api.events.guild.member.GuildMemberJoinEvent;
@@ -24,6 +27,7 @@ public class Listener extends ListenerAdapter {
     private static final Logger LOGGER = LoggerFactory.getLogger(Listener.class);
     private EventWaiter waiter;
     EmbedBuilder embedBuilder = new EmbedBuilder();
+    private final SChannelDaoImpl sChannelDaoImpl = new SChannelDaoImpl();
 
     public String privateWelcomeMessage() throws IOException {
         return new String(Files.readAllBytes(Paths.get("src/main/resources/privateWelcomeMessage.txt")));
@@ -36,7 +40,13 @@ public class Listener extends ListenerAdapter {
 
     @Override
     public void onGuildMemberJoin(@NotNull GuildMemberJoinEvent event) {
-        MessageChannel channel = event.getJDA().getTextChannelById(Config.get("WELCOME_CHANNEL_ID"));
+        SChannel sChannel = new SChannel();
+        try {
+            sChannel = sChannelDaoImpl.findByGuildidAndType(event.getGuild().getIdLong(), "welcome");
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+        }
+        MessageChannel channel = event.getJDA().getTextChannelById(sChannel.getChannelid());
         channel.sendMessage(event.getMember().getEffectiveName() + " vient de monter à bord du Bubble de JU. Bienvenue à toi matelot !").queue();
         LOGGER.info("Public welcome message has been sent for " + event.getMember().getEffectiveName());
 
@@ -69,6 +79,56 @@ public class Listener extends ListenerAdapter {
             MessageChannel channel = event.getChannel();
             channel.sendMessage("Your question has been added.").queue();
             LOGGER.info("A new question has been added.");
+        }
+
+        if (contentRaw.startsWith(prefix + "welcome")) {
+            SChannel sChannel = new SChannel();
+            try {
+                if (sChannelDaoImpl.findByGuildidAndType(event.getGuild().getIdLong(), "welcome") == null) {
+                    sChannel = new SChannel();
+                } else {
+                    sChannelDaoImpl.delete(event.getGuild().getIdLong(), "welcome");
+                }
+            } catch (SQLException throwables) {
+                throwables.printStackTrace();
+            }
+
+            sChannel.setGuildid(event.getMessage().getGuild().getIdLong());
+            sChannel.setChannelid(Long.parseLong(contentRaw.substring(9)));
+            sChannel.setType("welcome");
+            try {
+                sChannelDaoImpl.add(sChannel);
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+            MessageChannel channel = event.getChannel();
+            channel.sendMessage(contentRaw.substring(9) + " is the new welcome channel for this server.").queue();
+            LOGGER.info("A new welcome channel has been set.");
+        }
+
+        if (contentRaw.startsWith(prefix + "answers")) {
+            SChannel sChannel = new SChannel();
+            try {
+                if (sChannelDaoImpl.findByGuildidAndType(event.getGuild().getIdLong(), "answers") == null) {
+                    sChannel = new SChannel();
+                } else {
+                    sChannelDaoImpl.delete(event.getGuild().getIdLong(), "answers");
+                }
+            } catch (SQLException throwables) {
+                throwables.printStackTrace();
+            }
+
+            sChannel.setGuildid(event.getMessage().getGuild().getIdLong());
+            sChannel.setChannelid(Long.parseLong(contentRaw.substring(9)));
+            sChannel.setType("answers");
+            try {
+                sChannelDaoImpl.add(sChannel);
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+            MessageChannel channel = event.getChannel();
+            channel.sendMessage(contentRaw.substring(9) + " is the new answers channel for this server.").queue();
+            LOGGER.info("A new answers channel has been set.");
         }
     }
 }

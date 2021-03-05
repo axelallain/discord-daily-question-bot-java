@@ -1,6 +1,8 @@
 import com.jagrosh.jdautilities.commons.waiter.EventWaiter;
 import dao.QuestionDaoImpl;
+import dao.SChannelDaoImpl;
 import model.Question;
+import model.SChannel;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.Guild;
@@ -27,6 +29,7 @@ public class SendDailyRandomQuestion implements Job {
     private final QuestionDaoImpl questionDaoImpl = new QuestionDaoImpl();
     private static final Logger LOGGER = LoggerFactory.getLogger(Listener.class);
     private EventWaiter waiter;
+    private final SChannelDaoImpl sChannelDaoImpl = new SChannelDaoImpl();
 
     public SendDailyRandomQuestion() {
         jda = MyJda.getJda();
@@ -40,6 +43,8 @@ public class SendDailyRandomQuestion implements Job {
                 Random random = new Random();
                 Question randomQuestion = questionDaoImpl.findAllByGuildid(guild.getIdLong()).get(random.nextInt(questionDaoImpl.findAll().size()));
                 String question2 = randomQuestion.getContent();
+                SChannel sChannel = sChannelDaoImpl.findByGuildidAndType(guild.getIdLong(), "answers");
+                final Long answersChannelId = sChannel.getChannelid();
                 for (Member member : guild.getMembers()) {
 
                         if (member.getUser().isBot()) {
@@ -79,7 +84,7 @@ public class SendDailyRandomQuestion implements Job {
                                                     embedBuilder.addField(question1, event.getMessage().getContentRaw(), false);
                                                     embedBuilder.addField(question2, event2.getMessage().getContentRaw(), false);
                                                     embedBuilder.setThumbnail(member.getUser().getAvatarUrl());
-                                                    MessageChannel channel = jda.getTextChannelById(Config.get("ANSWERS_CHANNEL_ID"));
+                                                    MessageChannel channel = jda.getTextChannelById(answersChannelId);
                                                     channel.sendMessage(embedBuilder.build()).queue();
                                                     LOGGER.info("Answers have been sent.");
                                                 },
