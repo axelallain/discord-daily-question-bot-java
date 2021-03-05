@@ -7,6 +7,7 @@ import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.MessageChannel;
 import net.dv8tion.jda.api.events.ReadyEvent;
+import net.dv8tion.jda.api.events.guild.GuildJoinEvent;
 import net.dv8tion.jda.api.events.guild.member.GuildMemberJoinEvent;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
@@ -94,7 +95,7 @@ public class Listener extends ListenerAdapter {
             }
 
             sChannel.setGuildid(event.getMessage().getGuild().getIdLong());
-            sChannel.setChannelid(Long.parseLong(contentRaw.substring(9)));
+            sChannel.setChannelid(event.getChannel().getIdLong());
             sChannel.setType("welcome");
             try {
                 sChannelDaoImpl.add(sChannel);
@@ -102,7 +103,7 @@ public class Listener extends ListenerAdapter {
                 e.printStackTrace();
             }
             MessageChannel channel = event.getChannel();
-            channel.sendMessage(contentRaw.substring(9) + " is the new welcome channel for this server.").queue();
+            channel.sendMessage(event.getChannel().getName() + " is the new welcome channel for this server.").queue();
             LOGGER.info("A new welcome channel has been set.");
         }
 
@@ -119,7 +120,7 @@ public class Listener extends ListenerAdapter {
             }
 
             sChannel.setGuildid(event.getMessage().getGuild().getIdLong());
-            sChannel.setChannelid(Long.parseLong(contentRaw.substring(9)));
+            sChannel.setChannelid(event.getChannel().getIdLong());
             sChannel.setType("answers");
             try {
                 sChannelDaoImpl.add(sChannel);
@@ -127,7 +128,7 @@ public class Listener extends ListenerAdapter {
                 e.printStackTrace();
             }
             MessageChannel channel = event.getChannel();
-            channel.sendMessage(contentRaw.substring(9) + " is the new answers channel for this server.").queue();
+            channel.sendMessage(event.getChannel().getName() + " is the new answers channel for this server.").queue();
             LOGGER.info("A new answers channel has been set.");
         }
     }
