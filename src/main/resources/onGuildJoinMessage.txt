@@ -1,5 +1,5 @@
 **Hello, thank you for adding me!** :partying_face:
-I will send you random questions every day at 7 AM for you to stay in touch with your team.
+I will send you random questions every day at **7 AM** for you to stay in touch with your team.
 Questions are sent as a private message.
 All answers will be posted publicly on the server.
 ```
@@ -13,6 +13,6 @@ All answers will be posted publicly on the server.
                  Example : !add How old are you?
 
 
-Make a private channel to add your questions without **SPOILING!**
+Make a private channel to add your questions without SPOILING!
 ```
 If you want to access this list again, use **!help**

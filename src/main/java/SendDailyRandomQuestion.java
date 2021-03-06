@@ -55,9 +55,9 @@ public class SendDailyRandomQuestion implements Job {
                         if (DayOfWeek.from(LocalDate.now()) == DayOfWeek.SATURDAY || DayOfWeek.from(LocalDate.now()) == DayOfWeek.SUNDAY) {
                             return;
                         } else if (DayOfWeek.from(LocalDate.now()) == DayOfWeek.MONDAY) {
-                            question1 = "Hello " + member.getEffectiveName() + ", encore une belle journée à bord du Bubble de JU. Qu'as-tu fait ce week-end ?";
+                            question1 = "Hello " + member.getEffectiveName() + ", encore une belle journée. Qu'as-tu fait ce week-end ?";
                         } else {
-                            question1 = "Hello " + member.getEffectiveName() + ", encore une belle journée à bord du Bubble de JU. Comment ça va aujourd'hui ?";
+                            question1 = "Hello " + member.getEffectiveName() + ", encore une belle journée. Comment ça va aujourd'hui ?";
                         }
 
                         String finalQuestion1 = question1;

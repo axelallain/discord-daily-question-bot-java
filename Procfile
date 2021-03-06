@@ -1,1 +1,1 @@
-worker: java -jar build/libs/elliot-1.0.jar
+worker: java -jar elliot-1.0.jar
