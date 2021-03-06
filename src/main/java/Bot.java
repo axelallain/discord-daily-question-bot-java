@@ -14,6 +14,7 @@ import static org.quartz.SimpleScheduleBuilder.simpleSchedule;
 import static org.quartz.TriggerBuilder.newTrigger;
 
 import javax.security.auth.login.LoginException;
+import java.net.URISyntaxException;
 
 public class Bot {
 
@@ -29,7 +30,7 @@ public class Bot {
                 .build();
     }
 
-    public static void main(String[] args) throws LoginException, SchedulerException {
+    public static void main(String[] args) throws LoginException, SchedulerException, URISyntaxException {
         Bot b = new Bot();
         MyJda.setDefaultJda(b.jda);
         MyWaiter.setDefaultWaiter(b.waiter);
