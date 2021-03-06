@@ -36,11 +36,10 @@ public class Bot {
         MyWaiter.setDefaultWaiter(b.waiter);
         JdbcConfig.main(null);
 
-        int hour = Integer.parseInt(Config.get("DAILY_QUESTION_HOUR"));
-        int minutes = Integer.parseInt(Config.get("DAILY_QUESTION_MINUTES"));
+        int hour = 11;
+        int minutes = 00;
         Scheduler scheduler = StdSchedulerFactory.getDefaultScheduler();
         scheduler.start();
-        // TODO : Passer jda à la création de SendDailyRandomQuestion sinon il est null et ça fait crash la task.
         JobDetail job = newJob(SendDailyRandomQuestion.class).withIdentity("senddailyrandomquestion").build();
         CronTrigger trigger = newTrigger()
                 .withIdentity("trigger1")
