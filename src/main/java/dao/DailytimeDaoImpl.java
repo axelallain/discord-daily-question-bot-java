@@ -10,8 +10,11 @@ public class DailytimeDaoImpl {
     Connection connection;
 
     {
+        String dbUrl = "jdbc:postgresql://" + "ec2-52-50-171-4.eu-west-1.compute.amazonaws.com" + ':' + "5432/" + "d29dfj6gvlgjar" + "?sslmode=require";
+        String username = "fneyxnzadnmoxi";
+        String password = "8b4cddfd1245d9894f9e80046aee0f25d97654fb66488fc67dcd2d21790a3edf";
         try {
-            connection = DriverManager.getConnection("jdbc:postgresql://localhost:5432/elliot", "postgres", "at22x");
+            connection = DriverManager.getConnection(dbUrl, username, password);
         } catch (SQLException throwables) {
             throwables.printStackTrace();
         }
