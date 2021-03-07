@@ -36,11 +36,12 @@ public class SendDailyRandomQuestion implements Job {
 
     @Override
     public void execute(JobExecutionContext jobExecutionContext) throws JobExecutionException {
+        System.out.println("execute SendDailyRandomQuestion..");
         try {
             for (Guild guild : jda.getGuilds()) {
                 Random random = new Random();
                 List<Question> randomQuestionList = questionDaoImpl.findAllByGuildid(guild.getIdLong());
-                Question randomQuestion = new Question(guild.getIdLong(), "test random");
+                Question randomQuestion = randomQuestionList.get(random.nextInt(randomQuestionList.size()));
                 String question2 = randomQuestion.getContent();
                 SChannel sChannel = sChannelDaoImpl.findByGuildidAndType(guild.getIdLong(), "answers");
                 final Long answersChannelId = sChannel.getChannelid();
@@ -51,9 +52,7 @@ public class SendDailyRandomQuestion implements Job {
                         }
 
                         String question1;
-                        if (DayOfWeek.from(LocalDate.now()) == DayOfWeek.SATURDAY || DayOfWeek.from(LocalDate.now()) == DayOfWeek.SUNDAY) {
-                            return;
-                        } else if (DayOfWeek.from(LocalDate.now()) == DayOfWeek.MONDAY) {
+                        if (DayOfWeek.from(LocalDate.now()) == DayOfWeek.MONDAY) {
                             question1 = "Hello " + member.getEffectiveName() + ", encore une belle journée. Qu'as-tu fait ce week-end ?";
                         } else {
                             question1 = "Hello " + member.getEffectiveName() + ", encore une belle journée. Comment ça va aujourd'hui ?";
