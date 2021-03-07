@@ -23,6 +23,7 @@ public class QuestionDaoImpl {
             questions.add(question);
         }
 
+        connection.close();
         return questions;
     }
 
@@ -41,6 +42,7 @@ public class QuestionDaoImpl {
             questions.add(question);
         }
 
+        connection.close();
         return questions;
     }
 
@@ -51,6 +53,7 @@ public class QuestionDaoImpl {
         ps.setLong(1, question.getGuildid());
         ps.setString(2, question.getContent());
         int n = ps.executeUpdate();
+        connection.close();
         return n;
     }
 
@@ -60,5 +63,6 @@ public class QuestionDaoImpl {
         PreparedStatement ps = connection.prepareStatement(query);
         ps.setString(1, content);
         ps.executeUpdate();
+        connection.close();
     }
 }

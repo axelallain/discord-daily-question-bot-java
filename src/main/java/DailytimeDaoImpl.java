@@ -24,6 +24,7 @@ public class DailytimeDaoImpl {
             dailytime.setMinutes(rs.getInt("minutes"));
         }
 
+        connection.close();
         if (check == true) {
             return dailytime;
         } else {
@@ -39,6 +40,7 @@ public class DailytimeDaoImpl {
         ps.setInt(2, dailytime.getHour());
         ps.setInt(3, dailytime.getMinutes());
         int n = ps.executeUpdate();
+        connection.close();
         return n;
     }
 
@@ -48,5 +50,6 @@ public class DailytimeDaoImpl {
         PreparedStatement ps = connection.prepareStatement(query);
         ps.setLong(1, guildid);
         ps.executeUpdate();
+        connection.close();
     }
 }

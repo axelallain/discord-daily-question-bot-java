@@ -17,6 +17,7 @@ public class SChannelDaoImpl {
         ps.setLong(2, sChannel.getChannelid());
         ps.setString(3, sChannel.getType());
         int n = ps.executeUpdate();
+        connection.close();
         return n;
     }
 
@@ -37,6 +38,7 @@ public class SChannelDaoImpl {
             sChannel.setType(rs.getString("type"));
         }
 
+        connection.close();
         if (check == true) {
             return sChannel;
         } else {
@@ -51,5 +53,6 @@ public class SChannelDaoImpl {
         ps.setLong(1, guildid);
         ps.setString(2, type);
         ps.executeUpdate();
+        connection.close();
     }
 }
