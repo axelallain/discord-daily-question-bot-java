@@ -1,12 +1,8 @@
 import com.jagrosh.jdautilities.commons.waiter.EventWaiter;
-import dao.DailytimeDaoImpl;
-import dao.QuestionDaoImpl;
-import dao.SChannelDaoImpl;
 import model.Dailytime;
 import model.Question;
 import model.SChannel;
 import net.dv8tion.jda.api.EmbedBuilder;
-import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.MessageChannel;
 import net.dv8tion.jda.api.events.ReadyEvent;
 import net.dv8tion.jda.api.events.guild.GuildJoinEvent;
@@ -23,8 +19,6 @@ import java.nio.file.Paths;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Timer;
-import java.util.TimerTask;
 
 public class Listener extends ListenerAdapter {
 

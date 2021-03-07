@@ -1,6 +1,4 @@
 import com.jagrosh.jdautilities.commons.waiter.EventWaiter;
-import dao.QuestionDaoImpl;
-import dao.SChannelDaoImpl;
 import model.Question;
 import model.SChannel;
 import net.dv8tion.jda.api.EmbedBuilder;
@@ -19,9 +17,9 @@ import java.awt.*;
 import java.sql.SQLException;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicReference;
 
 public class SendDailyRandomQuestion implements Job {
 
@@ -41,7 +39,8 @@ public class SendDailyRandomQuestion implements Job {
         try {
             for (Guild guild : jda.getGuilds()) {
                 Random random = new Random();
-                Question randomQuestion = questionDaoImpl.findAllByGuildid(guild.getIdLong()).get(random.nextInt(questionDaoImpl.findAll().size()));
+                List<Question> randomQuestionList = questionDaoImpl.findAllByGuildid(guild.getIdLong());
+                Question randomQuestion = new Question(guild.getIdLong(), "test random");
                 String question2 = randomQuestion.getContent();
                 SChannel sChannel = sChannelDaoImpl.findByGuildidAndType(guild.getIdLong(), "answers");
                 final Long answersChannelId = sChannel.getChannelid();
