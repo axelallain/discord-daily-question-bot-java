@@ -41,6 +41,9 @@ public class SendDailyRandomQuestion implements Job {
             for (Guild guild : jda.getGuilds()) {
                 Random random = new Random();
                 List<Question> randomQuestionList = questionDaoImpl.findAllByGuildid(guild.getIdLong());
+                if (randomQuestionList.isEmpty()) {
+                    continue;
+                }
                 Question randomQuestion = randomQuestionList.get(random.nextInt(randomQuestionList.size()));
                 String question2 = randomQuestion.getContent();
                 SChannel sChannel = sChannelDaoImpl.findByGuildidAndType(guild.getIdLong(), "answers");

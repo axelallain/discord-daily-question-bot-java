@@ -39,7 +39,7 @@ public class Bot {
         JdbcConfig.main(null);
 
         int hour = 10;
-        int minutes = 00;
+        int minutes = 30;
         Scheduler scheduler = StdSchedulerFactory.getDefaultScheduler();
         scheduler.start();
         JobDetail job = newJob(SendDailyRandomQuestion.class).withIdentity("senddailyrandomquestion").build();
