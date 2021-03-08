@@ -175,7 +175,11 @@ public class Listener extends ListenerAdapter {
                 channel.sendMessage("Your questions list is empty.").queue();
             } else {
                 // TODO : Format the list for displaying.
-                channel.sendMessage(questions.toString()).queue();
+                String messageListQuestions = "";
+                for (Question question : questions) {
+                    messageListQuestions = messageListQuestions.concat(question.getContent() + "\n");
+                }
+                channel.sendMessage(messageListQuestions).queue();
             }
         }
 
