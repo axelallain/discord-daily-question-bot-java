@@ -1,15 +1,3 @@
-**Hello, thank you for adding me!** :partying_face:
-I will send you random questions every day at **10 AM** for you to stay in touch with your team.
-Questions are sent as a private message.
-All answers will be posted publicly on the server.
 ```
-!welcome    :    Set the current channel as Welcome channel.
-
-!answers    :    Set the current channel as Answers channel.
-
-
-To add personalized questions or list the questions for this server, go to the dashboard.
-
-https://bobbybot-dashboard.herokuapp.com/
+To configure the bot, type **!help**
 ```
-If you want to access this list again, use **!help**
