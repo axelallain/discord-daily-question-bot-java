@@ -1,4 +1,5 @@
 import com.jagrosh.jdautilities.commons.waiter.EventWaiter;
+import model.Freequestions;
 import model.Question;
 import model.SChannel;
 import net.dv8tion.jda.api.EmbedBuilder;
@@ -17,6 +18,7 @@ import java.awt.*;
 import java.sql.SQLException;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
@@ -28,6 +30,8 @@ public class SendDailyRandomQuestion implements Job {
     private static final Logger LOGGER = LoggerFactory.getLogger(Listener.class);
     private EventWaiter waiter;
     private final SChannelDaoImpl sChannelDaoImpl = new SChannelDaoImpl();
+    private final PremiumguildsDaoImpl premiumguildsDaoImpl = new PremiumguildsDaoImpl();
+    private final FreequestionsDaoImpl freequestionsDaoImpl = new FreequestionsDaoImpl();
 
     public SendDailyRandomQuestion() {
         jda = MyJda.getJda();
@@ -39,13 +43,31 @@ public class SendDailyRandomQuestion implements Job {
         System.out.println("execute SendDailyRandomQuestion..");
         try {
             for (Guild guild : jda.getGuilds()) {
-                Random random = new Random();
-                List<Question> randomQuestionList = questionDaoImpl.findAllByGuildid(guild.getIdLong());
-                if (randomQuestionList.isEmpty()) {
+                if (guild.getIdLong() != 817733772048859136L) {
                     continue;
                 }
-                Question randomQuestion = randomQuestionList.get(random.nextInt(randomQuestionList.size()));
-                String question2 = randomQuestion.getContent();
+                Random random = new Random();
+                List randomQuestionList;
+                String question2;
+
+                if (!premiumguildsDaoImpl.findByGuildid(guild.getIdLong()).isPremium()) {
+                    randomQuestionList = freequestionsDaoImpl.findAll();
+                    Freequestions randomQuestion = (Freequestions) randomQuestionList.get(random.nextInt(randomQuestionList.size()));
+                    String randomQuestionContent = randomQuestion.getContent();
+                    question2 = randomQuestionContent;
+                } else {
+                    randomQuestionList = questionDaoImpl.findAllByGuildid(guild.getIdLong());
+                    Question randomQuestion = (Question) randomQuestionList.get(random.nextInt(randomQuestionList.size()));
+                    String randomQuestionContent = randomQuestion.getContent();
+                    question2 = randomQuestionContent;
+                    if (randomQuestionList.isEmpty()) {
+                        randomQuestionList = freequestionsDaoImpl.findAll();
+                        Freequestions randomQuestionEmpty = (Freequestions) randomQuestionList.get(random.nextInt(randomQuestionList.size()));
+                        randomQuestionContent = randomQuestionEmpty.getContent();
+                        question2 = randomQuestionContent;
+                    }
+                }
+
                 SChannel sChannel = sChannelDaoImpl.findByGuildidAndType(guild.getIdLong(), "answers");
                 final Long answersChannelId = sChannel.getChannelid();
                 for (Member member : guild.getMembers()) {
@@ -68,10 +90,11 @@ public class SendDailyRandomQuestion implements Job {
                             LOGGER.info("First question sent to " + member.getEffectiveName());
                         });
 
-                        waiter.waitForEvent(PrivateMessageReceivedEvent.class,
+                    String finalQuestion = question2;
+                    waiter.waitForEvent(PrivateMessageReceivedEvent.class,
                                 (event) -> event.getMessage().getAuthor().getIdLong() == member.getUser().getIdLong(),
                                 (event) -> {
-                                        event.getChannel().sendMessage(question2).queue();
+                                        event.getChannel().sendMessage(finalQuestion).queue();
                                         LOGGER.info("Second question sent to " + member.getEffectiveName());
 
                                         waiter.waitForEvent(PrivateMessageReceivedEvent.class,
@@ -84,7 +107,7 @@ public class SendDailyRandomQuestion implements Job {
                                                     embedBuilder.setTitle("\uD83D\uDD14 " + member.getEffectiveName() + " a répondu aux questions du jour :", null);
                                                     embedBuilder.setColor(new Color(0x97DDDD));
                                                     embedBuilder.addField(question1, event.getMessage().getContentRaw(), false);
-                                                    embedBuilder.addField(question2, event2.getMessage().getContentRaw(), false);
+                                                    embedBuilder.addField(finalQuestion, event2.getMessage().getContentRaw(), false);
                                                     embedBuilder.setThumbnail(member.getUser().getAvatarUrl());
                                                     MessageChannel channel = jda.getTextChannelById(answersChannelId);
                                                     channel.sendMessage(embedBuilder.build()).queue();
@@ -107,7 +130,7 @@ public class SendDailyRandomQuestion implements Job {
 
 
                 }
-                questionDaoImpl.delete(randomQuestion.getContent());
+                questionDaoImpl.delete(question2);
             }
         } catch (SQLException sqlException) {
             sqlException.printStackTrace();

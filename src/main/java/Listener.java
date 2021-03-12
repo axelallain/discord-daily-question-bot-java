@@ -1,11 +1,13 @@
 import com.jagrosh.jdautilities.commons.waiter.EventWaiter;
 import model.Dailytime;
+import model.Premiumguilds;
 import model.Question;
 import model.SChannel;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.MessageChannel;
 import net.dv8tion.jda.api.events.ReadyEvent;
 import net.dv8tion.jda.api.events.guild.GuildJoinEvent;
+import net.dv8tion.jda.api.events.guild.GuildLeaveEvent;
 import net.dv8tion.jda.api.events.guild.member.GuildMemberJoinEvent;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.api.events.message.priv.PrivateMessageReceivedEvent;
@@ -29,6 +31,7 @@ public class Listener extends ListenerAdapter {
     EmbedBuilder embedBuilder = new EmbedBuilder();
     private final SChannelDaoImpl sChannelDaoImpl = new SChannelDaoImpl();
     private final DailytimeDaoImpl dailytimeDaoImpl = new DailytimeDaoImpl();
+    private final PremiumguildsDaoImpl premiumguildsDaoImpl = new PremiumguildsDaoImpl();
 
     public String privateWelcomeMessage() throws IOException {
         return new String(Files.readAllBytes(Paths.get("src/main/resources/privateWelcomeMessage.txt")));
@@ -52,8 +55,21 @@ public class Listener extends ListenerAdapter {
         MessageChannel channel = event.getGuild().getDefaultChannel();
         try {
             channel.sendMessage(onGuildJoinMessage()).queue();
-        } catch (IOException e) {
+            Premiumguilds premiumguilds = new Premiumguilds();
+            premiumguilds.setGuildid(event.getGuild().getIdLong());
+            premiumguilds.setPremium(false);
+            premiumguildsDaoImpl.add(premiumguilds);
+        } catch (IOException | SQLException e) {
             e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void onGuildLeave(@NotNull GuildLeaveEvent event) {
+        try {
+            premiumguildsDaoImpl.delete(event.getGuild().getIdLong());
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
         }
     }
 
@@ -91,67 +107,82 @@ public class Listener extends ListenerAdapter {
         String contentRaw = event.getMessage().getContentRaw();
 
         if (contentRaw.startsWith(prefix + "add")) {
-            Question question = new Question();
-            question.setGuildid(event.getMessage().getGuild().getIdLong());
-            question.setContent(contentRaw.substring(5));
-            try {
-                questionDaoImpl.add(question);
-            } catch (SQLException e) {
-                e.printStackTrace();
+            if (event.getMessage().getAuthor().getIdLong() == event.getGuild().getOwnerIdLong()) {
+                Question question = new Question();
+                question.setGuildid(event.getMessage().getGuild().getIdLong());
+                question.setContent(contentRaw.substring(5));
+                try {
+                    questionDaoImpl.add(question);
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+                MessageChannel channel = event.getChannel();
+                channel.sendMessage("Your question has been added.").queue();
+                LOGGER.info("A new question has been added.");
+            } else {
+                MessageChannel channel = event.getChannel();
+                channel.sendMessage("You are not the owner of this server.").queue();
             }
-            MessageChannel channel = event.getChannel();
-            channel.sendMessage("Your question has been added.").queue();
-            LOGGER.info("A new question has been added.");
         }
 
         if (contentRaw.startsWith(prefix + "welcome")) {
-            SChannel sChannel = new SChannel();
-            try {
-                if (sChannelDaoImpl.findByGuildidAndType(event.getGuild().getIdLong(), "welcome") == null) {
-                    sChannel = new SChannel();
-                } else {
-                    sChannelDaoImpl.delete(event.getGuild().getIdLong(), "welcome");
+            if (event.getMessage().getAuthor().getIdLong() == event.getGuild().getOwnerIdLong()) {
+                SChannel sChannel = new SChannel();
+                try {
+                    if (sChannelDaoImpl.findByGuildidAndType(event.getGuild().getIdLong(), "welcome") == null) {
+                        sChannel = new SChannel();
+                    } else {
+                        sChannelDaoImpl.delete(event.getGuild().getIdLong(), "welcome");
+                    }
+                } catch (SQLException throwables) {
+                    throwables.printStackTrace();
                 }
-            } catch (SQLException throwables) {
-                throwables.printStackTrace();
-            }
 
-            sChannel.setGuildid(event.getMessage().getGuild().getIdLong());
-            sChannel.setChannelid(event.getChannel().getIdLong());
-            sChannel.setType("welcome");
-            try {
-                sChannelDaoImpl.add(sChannel);
-            } catch (SQLException e) {
-                e.printStackTrace();
+                sChannel.setGuildid(event.getMessage().getGuild().getIdLong());
+                sChannel.setChannelid(event.getChannel().getIdLong());
+                sChannel.setType("welcome");
+                try {
+                    sChannelDaoImpl.add(sChannel);
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+                MessageChannel channel = event.getChannel();
+                channel.sendMessage(event.getChannel().getName() + " is the new welcome channel for this server.").queue();
+                LOGGER.info("A new welcome channel has been set.");
+            } else {
+                MessageChannel channel = event.getChannel();
+                channel.sendMessage("You are not the owner of this server.").queue();
             }
-            MessageChannel channel = event.getChannel();
-            channel.sendMessage(event.getChannel().getName() + " is the new welcome channel for this server.").queue();
-            LOGGER.info("A new welcome channel has been set.");
         }
 
         if (contentRaw.startsWith(prefix + "answers")) {
-            SChannel sChannel = new SChannel();
-            try {
-                if (sChannelDaoImpl.findByGuildidAndType(event.getGuild().getIdLong(), "answers") == null) {
-                    sChannel = new SChannel();
-                } else {
-                    sChannelDaoImpl.delete(event.getGuild().getIdLong(), "answers");
+            if (event.getMessage().getAuthor().getIdLong() == event.getGuild().getOwnerIdLong()) {
+                SChannel sChannel = new SChannel();
+                try {
+                    if (sChannelDaoImpl.findByGuildidAndType(event.getGuild().getIdLong(), "answers") == null) {
+                        sChannel = new SChannel();
+                    } else {
+                        sChannelDaoImpl.delete(event.getGuild().getIdLong(), "answers");
+                    }
+                } catch (SQLException throwables) {
+                    throwables.printStackTrace();
                 }
-            } catch (SQLException throwables) {
-                throwables.printStackTrace();
-            }
 
-            sChannel.setGuildid(event.getMessage().getGuild().getIdLong());
-            sChannel.setChannelid(event.getChannel().getIdLong());
-            sChannel.setType("answers");
-            try {
-                sChannelDaoImpl.add(sChannel);
-            } catch (SQLException e) {
-                e.printStackTrace();
+                sChannel.setGuildid(event.getMessage().getGuild().getIdLong());
+                sChannel.setChannelid(event.getChannel().getIdLong());
+                sChannel.setType("answers");
+                try {
+                    sChannelDaoImpl.add(sChannel);
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+                MessageChannel channel = event.getChannel();
+                channel.sendMessage(event.getChannel().getName() + " is the new answers channel for this server.").queue();
+                LOGGER.info("A new answers channel has been set.");
+            } else {
+                MessageChannel channel = event.getChannel();
+                channel.sendMessage("You are not the owner of this server.").queue();
             }
-            MessageChannel channel = event.getChannel();
-            channel.sendMessage(event.getChannel().getName() + " is the new answers channel for this server.").queue();
-            LOGGER.info("A new answers channel has been set.");
         }
 
         if (contentRaw.startsWith(prefix + "help")) {
@@ -164,23 +195,28 @@ public class Listener extends ListenerAdapter {
         }
 
         if (contentRaw.startsWith(prefix + "questions")) {
-            List<Question> questions = new ArrayList<>();
-            try {
-                questions = questionDaoImpl.findAllByGuildid(event.getGuild().getIdLong());
-            } catch (SQLException throwables) {
-                throwables.printStackTrace();
-            }
-
-            MessageChannel channel = event.getChannel();
-            if (questions.isEmpty()) {
-                channel.sendMessage("Your questions list is empty.").queue();
-            } else {
-                // TODO : Format the list for displaying.
-                String messageListQuestions = "";
-                for (Question question : questions) {
-                    messageListQuestions = messageListQuestions.concat(question.getContent() + "\n");
+            if (event.getMessage().getAuthor().getIdLong() == event.getGuild().getOwnerIdLong()) {
+                List<Question> questions = new ArrayList<>();
+                try {
+                    questions = questionDaoImpl.findAllByGuildid(event.getGuild().getIdLong());
+                } catch (SQLException throwables) {
+                    throwables.printStackTrace();
                 }
-                channel.sendMessage(messageListQuestions).queue();
+
+                MessageChannel channel = event.getChannel();
+                if (questions.isEmpty()) {
+                    channel.sendMessage("Your questions list is empty.").queue();
+                } else {
+                    // TODO : Format the list for displaying.
+                    String messageListQuestions = "";
+                    for (Question question : questions) {
+                        messageListQuestions = messageListQuestions.concat(question.getContent() + "\n");
+                    }
+                    channel.sendMessage(messageListQuestions).queue();
+                }
+            } else {
+                MessageChannel channel = event.getChannel();
+                channel.sendMessage("You are not the owner of this server.").queue();
             }
         }
 
