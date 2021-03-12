@@ -9,6 +9,7 @@ All answers will be posted publicly on the server.
 
 
 To add personalized questions or list the questions for this server, go to the dashboard.
+
 https://bobbybot-dashboard.herokuapp.com/
 ```
 If you want to access this list again, use **!help**
