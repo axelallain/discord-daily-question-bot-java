@@ -56,9 +56,9 @@ public class SendDailyRandomQuestion implements Job {
 
                         String question1;
                         if (DayOfWeek.from(LocalDate.now()) == DayOfWeek.MONDAY) {
-                            question1 = "Hello " + member.getEffectiveName() + ", encore une belle journée. Qu'as-tu fait ce week-end ?";
+                            question1 = "Hello " + member.getEffectiveName() + ", what did you do this weekend?";
                         } else {
-                            question1 = "Hello " + member.getEffectiveName() + ", encore une belle journée. Comment ça va aujourd'hui ?";
+                            question1 = "Hello " + member.getEffectiveName() + ", how are you today?";
                         }
 
                         String finalQuestion1 = question1;
@@ -77,6 +77,7 @@ public class SendDailyRandomQuestion implements Job {
                                         waiter.waitForEvent(PrivateMessageReceivedEvent.class,
                                                 (event2) -> event2.getMessage().getAuthor().getIdLong() == member.getUser().getIdLong(),
                                                 (event2) -> {
+                                                    event.getChannel().sendMessage("If you don't want me to ask you any more questions, block me!").queue();
                                                     LOGGER.info(member.getEffectiveName() + " answered questions.");
 
                                                     EmbedBuilder embedBuilder = new EmbedBuilder();

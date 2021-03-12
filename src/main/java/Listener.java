@@ -8,6 +8,7 @@ import net.dv8tion.jda.api.events.ReadyEvent;
 import net.dv8tion.jda.api.events.guild.GuildJoinEvent;
 import net.dv8tion.jda.api.events.guild.member.GuildMemberJoinEvent;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
+import net.dv8tion.jda.api.events.message.priv.PrivateMessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
@@ -213,6 +214,29 @@ public class Listener extends ListenerAdapter {
             MessageChannel channel = event.getChannel();
             channel.sendMessage("The time for sending questions is set to " + hour + ":" + minutes).queue();
             LOGGER.info("A new dailytime has been added.");
+        }
+    }
+
+    @Override
+    public void onPrivateMessageReceived(@NotNull PrivateMessageReceivedEvent event) {
+        String prefix = Config.get("PREFIX");
+        String contentRaw = event.getMessage().getContentRaw();
+
+        if (contentRaw.startsWith(prefix + "addquestionprivate")) {
+            if (event.getMessage().getAuthor().getMutualGuilds().equals(event.getJDA().getMutualGuilds())) {
+                Question question = new Question();
+                question.setGuildid(Long.parseLong(contentRaw.substring(5, 22)));
+                question.setContent(contentRaw.substring(24));
+                try {
+                    questionDaoImpl.add(question);
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+                MessageChannel channel = event.getChannel();
+                channel.sendMessage("Your question has been added.").queue();
+                LOGGER.info("A new question has been added.");
+            }
+
         }
     }
 }
