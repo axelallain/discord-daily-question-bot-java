@@ -43,9 +43,6 @@ public class SendDailyRandomQuestion implements Job {
         System.out.println("execute SendDailyRandomQuestion..");
         try {
             for (Guild guild : jda.getGuilds()) {
-                if (guild.getIdLong() != 817733772048859136L) {
-                    continue;
-                }
                 Random random = new Random();
                 List randomQuestionList;
                 String question2;
