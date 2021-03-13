@@ -106,7 +106,7 @@ public class SendDailyRandomQuestion implements Job {
                                                     LOGGER.info(member.getEffectiveName() + " answered questions.");
 
                                                     EmbedBuilder embedBuilder = new EmbedBuilder();
-                                                    embedBuilder.setTitle("\uD83D\uDD14 " + member.getEffectiveName() + " a répondu aux questions du jour :", null);
+                                                    embedBuilder.setTitle("\uD83D\uDD14 " + member.getEffectiveName() + " answered the questions of the day :", null);
                                                     embedBuilder.setColor(new Color(0x97DDDD));
                                                     embedBuilder.addField(question1, event.getMessage().getContentRaw(), false);
                                                     embedBuilder.addField(finalQuestion, event2.getMessage().getContentRaw(), false);
