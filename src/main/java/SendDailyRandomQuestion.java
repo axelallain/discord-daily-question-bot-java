@@ -6,6 +6,7 @@ import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageChannel;
 import net.dv8tion.jda.api.events.message.priv.PrivateMessageReceivedEvent;
 import org.quartz.Job;
@@ -42,14 +43,15 @@ public class SendDailyRandomQuestion implements Job {
     public void execute(JobExecutionContext jobExecutionContext) throws JobExecutionException {
         System.out.println("execute SendDailyRandomQuestion..");
         try {
+            Random random = new Random();
+            List<Freequestions> freequestionsList = freequestionsDaoImpl.findAll();
+            Freequestions randomFreeQuestion = freequestionsList.get(random.nextInt(freequestionsList.size()));
             for (Guild guild : jda.getGuilds()) {
-                Random random = new Random();
                 List randomQuestionList;
                 String question2;
 
                 if (!premiumguildsDaoImpl.findByGuildid(guild.getIdLong()).isPremium()) {
-                    randomQuestionList = freequestionsDaoImpl.findAll();
-                    Freequestions randomQuestion = (Freequestions) randomQuestionList.get(random.nextInt(randomQuestionList.size()));
+                    Freequestions randomQuestion = randomFreeQuestion;
                     String randomQuestionContent = randomQuestion.getContent();
                     question2 = randomQuestionContent;
                 } else {
@@ -83,6 +85,9 @@ public class SendDailyRandomQuestion implements Job {
                         String finalQuestion1 = question1;
                         member.getUser().openPrivateChannel().queue(privateChannel -> { // this is a lambda expression
                             // the channel is the successful response
+                            if (privateChannel.retrieveMessageById(privateChannel.getLatestMessageIdLong()).toString().equals(finalQuestion1)) {
+                                // alors waitFor
+                            }
                             privateChannel.sendMessage(finalQuestion1).queue();
                             LOGGER.info("First question sent to " + member.getEffectiveName());
                         });
