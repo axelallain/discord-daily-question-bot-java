@@ -45,24 +45,34 @@ public class SendDailyRandomQuestion implements Job {
         try {
             Random random = new Random();
             List<Freequestions> freequestionsList = freequestionsDaoImpl.findAll();
-            Freequestions randomFreeQuestion = freequestionsList.get(random.nextInt(freequestionsList.size()));
+            Freequestions randomFreeQuestion = null;
+
+            if (freequestionsList.isEmpty()) {
+                LOGGER.error("Free questions list is empty.");
+            } else {
+                randomFreeQuestion = freequestionsList.get(random.nextInt(freequestionsList.size()));
+            }
+
             for (Guild guild : jda.getGuilds()) {
                 List randomQuestionList;
                 String question2;
+                String randomQuestionContent;
 
                 if (!premiumguildsDaoImpl.findByGuildid(guild.getIdLong()).isPremium()) {
                     Freequestions randomQuestion = randomFreeQuestion;
-                    String randomQuestionContent = randomQuestion.getContent();
+                    randomQuestionContent = randomQuestion.getContent();
                     question2 = randomQuestionContent;
                 } else {
                     randomQuestionList = questionDaoImpl.findAllByGuildid(guild.getIdLong());
-                    Question randomQuestion = (Question) randomQuestionList.get(random.nextInt(randomQuestionList.size()));
-                    String randomQuestionContent = randomQuestion.getContent();
-                    question2 = randomQuestionContent;
-                    if (randomQuestionList.isEmpty()) {
+
+                    if(randomQuestionList.isEmpty()) {
                         randomQuestionList = freequestionsDaoImpl.findAll();
                         Freequestions randomQuestionEmpty = (Freequestions) randomQuestionList.get(random.nextInt(randomQuestionList.size()));
                         randomQuestionContent = randomQuestionEmpty.getContent();
+                        question2 = randomQuestionContent;
+                    } else {
+                        Question randomQuestion = (Question) randomQuestionList.get(random.nextInt(randomQuestionList.size()));
+                        randomQuestionContent = randomQuestion.getContent();
                         question2 = randomQuestionContent;
                     }
                 }
