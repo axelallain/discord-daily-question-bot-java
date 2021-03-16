@@ -44,7 +44,18 @@ public class SendDailyRandomQuestion implements Job {
         System.out.println("execute SendDailyRandomQuestion..");
         try {
             Random random = new Random();
-            List<Freequestions> freequestionsList = freequestionsDaoImpl.findAll();
+
+            List<Freequestions> freequestionsListCheckUsed = freequestionsDaoImpl.findAll();
+            List<Freequestions> freequestionsListUsed = freequestionsDaoImpl.findAllByUsed(true);
+
+            if (freequestionsListUsed.size() == freequestionsListCheckUsed.size()) {
+                for (Freequestions freequestions : freequestionsListUsed) {
+                    freequestionsDaoImpl.updateByContent(false, freequestions.getContent());
+                }
+            }
+
+            List<Freequestions> freequestionsList = freequestionsDaoImpl.findAllByUsed(false);
+
             Freequestions randomFreeQuestion = null;
 
             if (freequestionsList.isEmpty()) {
@@ -54,6 +65,11 @@ public class SendDailyRandomQuestion implements Job {
             }
 
             for (Guild guild : jda.getGuilds()) {
+
+                if (guild.getIdLong() != 817733772048859136L) {
+                    continue;
+                }
+
                 List randomQuestionList;
                 String question2;
                 String randomQuestionContent;
@@ -66,8 +82,7 @@ public class SendDailyRandomQuestion implements Job {
                     randomQuestionList = questionDaoImpl.findAllByGuildid(guild.getIdLong());
 
                     if(randomQuestionList.isEmpty()) {
-                        randomQuestionList = freequestionsDaoImpl.findAll();
-                        Freequestions randomQuestionEmpty = (Freequestions) randomQuestionList.get(random.nextInt(randomQuestionList.size()));
+                        Freequestions randomQuestionEmpty = randomFreeQuestion;
                         randomQuestionContent = randomQuestionEmpty.getContent();
                         question2 = randomQuestionContent;
                     } else {
@@ -118,8 +133,23 @@ public class SendDailyRandomQuestion implements Job {
                                                     EmbedBuilder embedBuilder = new EmbedBuilder();
                                                     embedBuilder.setTitle("\uD83D\uDD14 " + member.getEffectiveName() + " answered the questions of the day :", null);
                                                     embedBuilder.setColor(new Color(0x97DDDD));
-                                                    embedBuilder.addField(question1, event.getMessage().getContentRaw(), false);
-                                                    embedBuilder.addField(finalQuestion, event2.getMessage().getContentRaw(), false);
+
+                                                    if (event.getMessage().getAttachments().isEmpty()) {
+                                                        embedBuilder.addField(question1, event.getMessage().getContentRaw(), false);
+                                                    } else {
+                                                        for (Message.Attachment attachment : event.getMessage().getAttachments()) {
+                                                            embedBuilder.addField(question1, attachment.getUrl(), false);
+                                                        }
+                                                    }
+
+                                                    if (event2.getMessage().getAttachments().isEmpty()) {
+                                                        embedBuilder.addField(finalQuestion, event2.getMessage().getContentRaw(), false);
+                                                    } else {
+                                                        for (Message.Attachment attachment2 : event2.getMessage().getAttachments()) {
+                                                            embedBuilder.addField(finalQuestion, attachment2.getUrl(), false);
+                                                        }
+                                                    }
+
                                                     embedBuilder.setThumbnail(member.getUser().getAvatarUrl());
                                                     MessageChannel channel = jda.getTextChannelById(answersChannelId);
                                                     channel.sendMessage(embedBuilder.build()).queue();
@@ -142,6 +172,10 @@ public class SendDailyRandomQuestion implements Job {
 
 
                 }
+                if (freequestionsDaoImpl.findByContent(question2) != null) {
+                    freequestionsDaoImpl.updateByContent(true, question2);
+                }
+                // questionDaoImpl = question premium donc cette méthode ne supprime pas les questions gratuites.
                 questionDaoImpl.delete(question2);
             }
         } catch (SQLException sqlException) {
