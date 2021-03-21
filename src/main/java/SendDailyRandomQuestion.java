@@ -66,9 +66,14 @@ public class SendDailyRandomQuestion implements Job {
 
             for (Guild guild : jda.getGuilds()) {
 
-                if (guild.getIdLong() != 817733772048859136L) {
+                /*
+
+                // TODO : Remove this condition for production purpose.
+                if (guild.getOwnerIdLong() != 219721599346016266L) {
                     continue;
                 }
+
+                 */
 
                 List randomQuestionList;
                 String question2;
@@ -110,9 +115,6 @@ public class SendDailyRandomQuestion implements Job {
                         String finalQuestion1 = question1;
                         member.getUser().openPrivateChannel().queue(privateChannel -> { // this is a lambda expression
                             // the channel is the successful response
-                            if (privateChannel.retrieveMessageById(privateChannel.getLatestMessageIdLong()).toString().equals(finalQuestion1)) {
-                                // alors waitFor
-                            }
                             privateChannel.sendMessage(finalQuestion1).queue();
                             LOGGER.info("First question sent to " + member.getEffectiveName());
                         });
